@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Web;
+using System.Collections.Specialized;
 
 namespace WebApplication1
 {
@@ -31,10 +32,12 @@ namespace WebApplication1
             string SNUMBR = "";
             string BATCH  = "";
             string SSCCID = "";
+            string COUNT  = "";
+            string WEIGHT = "";
             // we are looking for something of this form - SGTIN    = /01/00095791000015/21/0000123 
             // or                                     GTIN+batch    = /01/00095791000015/10/ABC123
             // or                                     GTIN+batch+SN = /01/00095791000015/10/ABC123/21/0000123  :: batch before SN
-            // or                                     SSCC          = /00/00095791000015[/02/GTIN?3101=w&37=n]
+            // or                                     SSCC          = /00/00095791000015[?02=GTIN&3101=w&37=n]
 
             for (int i = 0; i < tokens.Length; i++)
             {
@@ -59,11 +62,23 @@ namespace WebApplication1
                 {
                     BATCH = tokens[i + 1];  // batch/lot
                 }
-                if (isSSCC && tokens[i] == "02" && tokens.Length > (i + 1))
-                {
-                    GTINID = tokens[i + 1];  //id of contained items
-                }
                 respstr = respstr + tokens[i];
+            }
+
+            // and process any optional keys (SSCC only)
+            if (isSSCC)
+            {
+                NameValueCollection coll = context.Request.QueryString;
+                foreach (String key in coll.AllKeys)
+                {
+                    if (String.Compare(key, "02") == 0)
+                        GTINID = coll.GetValues(key)[0];
+                    if (String.Compare(key, "37") == 0)
+                        COUNT = coll.GetValues(key)[0];
+                    if (String.Compare(key, "3101") == 0)
+                        WEIGHT = coll.GetValues(key)[0];
+                }
+
             }
 
             //write your handler implementation here.
@@ -77,7 +92,7 @@ namespace WebApplication1
             else
             {
                 string options = isGTIN ? string.Format("%26GTIN%3D{0}%26SERIAL%3D{1}%26BATCH%3D{2}", GTINID, SNUMBR, BATCH)
-                                        : string.Format("%26SSCC%3D{0}%26GTIN%3D{1}",SSCCID, GTINID);
+                                        : string.Format("%26SSCC%3D{0}%26GTIN%3D{1}%26COUNT%3D{2}",SSCCID, GTINID, COUNT);
 
                 // this we would lookup based on the primary code (SCCID or GTINID)
                 string experience = "https://view.vuforia.com/command/view-experience?url=https%3A%2F%2Fxuqztwnu.pp.vuforia.io%2FExperienceService%2Fcontent%2Fprojects%2Fnordlock%2Findex.html%3FexpId%3D1";
