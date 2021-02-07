@@ -92,7 +92,7 @@ namespace WebApplication1
             else
             {
                 string options = isGTIN ? string.Format("%26GTIN%3D{0}%26SERIAL%3D{1}%26BATCH%3D{2}", GTINID, SNUMBR, BATCH)
-                                        : string.Format("%26SSCC%3D{0}%26GTIN%3D{1}%26COUNT%3D{2}",SSCCID, GTINID, COUNT);
+                                        : string.Format("%26SSCC%3D{0}%26GTIN%3D{1}%26COUNT%3D{2}%26WEIGHT%3D{3}",SSCCID, GTINID, COUNT, WEIGHT);
 
                 // this we would lookup based on the primary code (SCCID or GTINID)
                 string experience = "https://view.vuforia.com/command/view-experience?url=https%3A%2F%2Fxuqztwnu.pp.vuforia.io%2FExperienceService%2Fcontent%2Fprojects%2Fnordlock%2Findex.html%3FexpId%3D1";
@@ -105,7 +105,7 @@ namespace WebApplication1
                 response.Write("</body></html>");
 #else
                 // and redirect to the experience server
-                //response.Redirect(respstr, true);
+                response.Redirect(respstr, true);
 #endif
             }
 
